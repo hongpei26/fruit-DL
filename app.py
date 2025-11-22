@@ -106,8 +106,8 @@ st.markdown("""
 def load_predictor():
     """載入預測器 (只執行一次)"""
     return PlantDiseasePredictor(
-        model_path='output/best_model.pth',
-        classes_path='output/classes.json',
+        model_path='output_v2/best_model.pth',
+        classes_path='output_v2/classes.json',
         verbose=False
     )
 
@@ -115,13 +115,13 @@ try:
     predictor = load_predictor()
     model_info = predictor.get_model_info()
 except Exception as e:
-    st.error(f"❌ 無法載入模型: {e}")
+    st.error(f"無法載入模型: {e}")
     st.info("請確保 output/best_model.pth 和 output/classes.json 存在")
     st.stop()
 
 # ========== 側邊欄 ==========
 with st.sidebar:
-    st.header("⚙️ 系統資訊")
+    st.header("系統資訊")
 
     # 模型狀態（改成下拉選單）
     with st.expander("模型狀態", expanded=False):  # expanded=True 代表預設展開
@@ -175,7 +175,7 @@ if uploaded_file is not None:
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        st.subheader("📷 上傳的圖片")
+        st.subheader("上傳的圖片")
         st.image(image, use_container_width=True, caption=uploaded_file.name)
 
         # 圖片資訊
@@ -186,10 +186,10 @@ if uploaded_file is not None:
             st.write(f"**色彩模式**: {image.mode}")
 
     with col2:
-        st.subheader("🔍 診斷結果")
+        st.subheader("診斷結果")
 
         # 進行預測
-        with st.spinner('🧠 AI 正在分析圖片...'):
+        with st.spinner('AI 正在分析圖片...'):
             predictions = predictor.predict(image, top_k=top_k)
 
         # 最佳預測結果
@@ -198,10 +198,10 @@ if uploaded_file is not None:
         # 根據信心度顯示不同訊息
         if best_prob >= confidence_threshold:
             result_bg = "#52663f"   
-            result_title = "✅  診斷結果"
+            result_title = "診斷結果"
         else:
             result_bg = "#52663f"   
-            result_title = "⚠️  可能診斷（信心度較低）"
+            result_title = "可能診斷（信心度較低）"
 
         st.markdown(
         f"""
@@ -230,14 +230,18 @@ if uploaded_file is not None:
 
         # 建議措施
         st.markdown("---")
-        st.markdown("### 💡 建議措施")
+        st.markdown("### 建議措施")
 
         disease_recommendations = {
-            "healthy": "✅ 葉片健康，繼續保持良好的栽培管理。",
+            "healthy": "葉片健康，繼續保持良好的栽培管理。",
             "canker": "檢測到潰瘍病，建議：\n- 移除受感染組織\n- 使用銅基殺菌劑\n- 改善通風條件",
-            "greasy_spot": "檢測到油斑病，建議：\n- 噴灑殺菌劑\n- 避免過度灌溉\n- 清除落葉",
-            "melanose": "檢測到黑點病，建議：\n- 使用保護性殺菌劑\n- 修剪過密枝條\n- 注意排水",
-            "sooty_mold": "檢測到煤煙病，建議：\n- 控制蚜蟲等害蟲\n- 清洗葉面\n- 改善通風"
+            "greasy_spot": "檢測到油斑病，建議：\n- 噴灑適當殺菌劑\n- 避免過度灌溉與葉面長期潮濕\n- 清除嚴重受害落葉",
+            "melanose": "檢測到黑點病，建議：\n- 使用保護性殺菌劑\n- 修剪過密枝條\n- 注意排水與通風",
+            "sooty_mold": "檢測到煤煙病，建議：\n- 先控制蚜蟲、介殼蟲等分泌蜜露的害蟲\n- 視情況清洗葉面\n- 改善園區通風與採光",
+            "pest_aphid": "檢測到蚜蟲危害，建議：\n- 針對嫩梢與葉背進行防治\n- 可使用皂素、礦物油或選擇性殺蟲劑\n- 避免氮肥過量以減少嫩梢暴露",
+            "pest_leaf_miner": "檢測到潛葉蛾危害，建議：\n- 剪除嚴重受害葉片\n- 適時使用系統性殺蟲劑\n- 監測成蟲發生期以提早防治",
+            "pest_scale_insect": "檢測到介殼蟲危害，建議：\n- 修剪嚴重受害枝條\n- 使用礦物油或合適殺蟲劑\n- 搭配天敵保育降低族群密度",
+            "pest_thrips": "檢測到薊馬危害，建議：\n- 加強花期與嫩葉期監測\n- 適時使用選擇性殺蟲劑\n- 搭配黃色/藍色黏蟲板監控族群變化",
         }
 
          # 針對不同疾病給不同底色
@@ -247,6 +251,10 @@ if uploaded_file is not None:
             "greasy_spot": ("#52663f", "#ffffff"),
             "melanose": ("#52663f", "#ffffff"),
             "sooty_mold": ("#52663f", "#ffffff"),
+            "pest_aphid": ("#52663f", "#ffffff"),
+            "pest_leaf_miner": ("#52663f", "#ffffff"),
+            "pest_scale_insect": ("#52663f", "#ffffff"),
+            "pest_thrips": ("#52663f", "#ffffff"),
         }
 
         recommendation = disease_recommendations.get(
@@ -271,7 +279,7 @@ if uploaded_file is not None:
 
 # ========== 詳細分析 ==========
     st.markdown("---")
-    st.subheader("📊 詳細分析")
+    st.subheader("詳細分析")
 
     # 建立 DataFrame
     df = pd.DataFrame(predictions, columns=['類別', '信心度 (%)'])
@@ -359,7 +367,7 @@ else:
 
     # 使用說明
     
-    with st.expander("📖 使用說明"):
+    with st.expander("使用說明"):
         st.markdown("""
         ### 如何使用本系統
 
@@ -370,27 +378,35 @@ else:
 
         ### 拍攝建議
 
-        - 📸 使用清晰的照片
-        - 🌞 確保光線充足
-        - 🎯 聚焦在病徵區域
-        - 📏 保持適當距離（葉片佔畫面 50-80%）
+        - 使用清晰的照片
+        - 確保光線充足
+        - 聚焦在病徵區域
+        - 保持適當距離（葉片佔畫面 50-80%）
 
         ### 支援的病害類別
 
-        本系統可辨識以下 5 種類別：
-        - 🟢 **healthy** (健康)
-        - 🔴 **canker** (潰瘍病)
-        - 🟡 **greasy_spot** (油斑病)
-        - 🟠 **melanose** (黑點病)
-        - ⚫ **sooty_mold** (煤煙病)
+        本系統可辨識以下 9 種類別：
+        - **healthy** (健康)
+        - **canker** (潰瘍病)
+        - **greasy_spot** (油斑病)
+        - **melanose** (黑點病)
+        - **sooty_mold** (煤煙病)
+        - **pest_thrips** (蟲害－薊馬)
+        - **pest_leaf_miner** (蟲害－潛葉蛾)
+        - **pest_aphid** (蟲害－蚜蟲 )
+        - **pest_scale_insect** (蟲害－介殼蟲 )
+
         """)
 
 # ========== 頁尾 ==========
-st.markdown("---")
-st.markdown("""
+acc_text = ""
+if model_info.get("accuracy") is not None:
+    acc_text = f" | 準確率: {model_info['accuracy']:.2f}%"
+
+st.markdown(f"""
 <div style='text-align: center; color: #000000; padding: 1rem;'>
-    <p>🌿 植物病蟲害智能辨識系統 v1.0</p>
-    <p>使用 ConvNeXt Large 深度學習模型 | 準確率: 97.97%</p>
+    <p>植物病蟲害智能辨識系統 v1.0</p>
+    <p>使用 ConvNeXt Large 深度學習模型{acc_text}</p>
     <p><small>© 2025 - 僅供教學與研究使用</small></p>
 </div>
 """, unsafe_allow_html=True)

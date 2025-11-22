@@ -44,3 +44,7 @@ checkpoints/
 *.tmp
 *.log
 *.bak
+
+
+# New model outputs
+output_v2/
